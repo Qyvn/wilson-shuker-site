@@ -1,5 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
-import type { Song } from '../types';
+import type { Song, VaultConfig, TourEvent } from '../types';
+import { VaultPanel } from './VaultPanel';
+import { vaultStatus } from '../lib/vault';
+import { useNow } from '../hooks/useNow';
 import { CDWheel } from './CDWheel';
 import { CassettePlayer } from './CassettePlayer';
 import { usePreviewPlayer } from '../hooks/usePreviewPlayer';
@@ -7,8 +10,19 @@ import { useReducedMotion } from '../hooks/useReducedMotion';
 
 interface Flight { key: number; art: string; from: DOMRect; to: DOMRect }
 
-export function MusicSection({ songs, capSeconds }: { songs: Song[]; capSeconds: number }) {
+const blank = { previewUrl: '', spotifyUrl: '', appleMusicUrl: '', youtubeMusicUrl: '', youtubeUrl: '' };
+
+export function MusicSection({ songs, capSeconds, vault, tourEvents }: {
+  songs: Song[]; capSeconds: number; vault?: VaultConfig; tourEvents?: TourEvent[];
+}) {
   const [selected, setSelected] = useState<Song | null>(null);
+  const [special, setSpecial] = useState<'vault' | 'tour' | null>(null);
+  const now = useNow(vault?.enabled ? 1000 : 60000);
+  const locked = vault ? !vaultStatus(vault.releaseDate, now).unlocked : false;
+  const items: Song[] = [...songs];
+  if (vault?.enabled) items.push({ id: '__vault', title: vault.title, artwork: vault.teaserArt, kind: 'vault', locked, ...blank });
+  const nextShow = tourEvents?.filter((e) => Date.parse(e.date) > now).sort((a, b) => Date.parse(a.date) - Date.parse(b.date))[0];
+  if (tourEvents && tourEvents.length > 0) items.push({ id: '__tour', title: 'Tour dates', artwork: '', kind: 'tour', ...blank });
   const player = usePreviewPlayer(selected, capSeconds);
   const reduced = useReducedMotion();
   const slotRef = useRef<HTMLDivElement>(null);
@@ -16,6 +30,8 @@ export function MusicSection({ songs, capSeconds }: { songs: Song[]; capSeconds:
 
   const onSelect = useCallback(
     (song: Song, discEl: HTMLElement | null) => {
+      if (song.kind === 'vault' || song.kind === 'tour') { setSpecial(song.kind); setSelected(null); return; }
+      setSpecial(null);
       if (selected?.id === song.id) return;
       setSelected(song);
       const slot = slotRef.current;
@@ -30,8 +46,21 @@ export function MusicSection({ songs, capSeconds }: { songs: Song[]; capSeconds:
 
   return (
     <div className="music-grid">
-      <CDWheel songs={songs} selectedId={selected?.id ?? null} onSelect={onSelect} reducedMotion={reduced} />
-      <CassettePlayer ref={slotRef} song={selected} player={player} />
+      <CDWheel songs={items} selectedId={special ? `__${special}` : selected?.id ?? null} onSelect={onSelect} reducedMotion={reduced} />
+      {special === 'vault' && vault ? (
+        <VaultPanel vault={vault} />
+      ) : special === 'tour' ? (
+        <div className="cassette-deck tour-teaser" data-testid="tour-teaser">
+          <div className="deck-top"><span className="deck-brand">ON TOUR</span></div>
+          {nextShow ? (
+            <p><strong>Next show:</strong> {nextShow.name}, {nextShow.city},{' '}
+              {new Date(nextShow.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+          ) : <p className="muted">No upcoming dates announced yet.</p>}
+          <a className="btn btn-primary" href="#tour">See dates &amp; tickets</a>
+        </div>
+      ) : (
+        <CassettePlayer ref={slotRef} song={selected} player={player} />
+      )}
       {flight && <FlyingDisc key={flight.key} flight={flight} onDone={() => setFlight(null)} />}
     </div>
   );

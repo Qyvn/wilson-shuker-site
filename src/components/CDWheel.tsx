@@ -129,14 +129,14 @@ export function CDWheel({ songs, selectedId, onSelect, reducedMotion }: Props) {
                 key={s.id}
                 ref={(el) => { discRefs.current[i] = el; }}
                 type="button"
-                className={`disc-slot${selected ? ' is-selected' : ''}${facing ? ' is-front' : ''}${Math.abs(rel) > 90 ? ' is-back' : ''}`}
+                className={`disc-slot${s.kind && s.kind !== 'song' ? ` disc-${s.kind}` : ''}${s.locked ? ' is-locked' : ''}${selected ? ' is-selected' : ''}${facing ? ' is-front' : ''}${Math.abs(rel) > 90 ? ' is-back' : ''}`}
                 style={{
                   transform: `rotateY(${angle}deg) translateZ(${radius + (selected ? 40 : 0)}px)`,
                   opacity: Math.abs(rel) > 100 ? 0.55 : 1,
                 }}
                 tabIndex={i === front ? 0 : -1}
                 aria-pressed={selected}
-                aria-label={`${s.title}${selected ? ' (selected)' : ''}`}
+                aria-label={`${s.title}${s.kind === 'vault' ? (s.locked ? ' (locked vault disc)' : ' (vault disc, unlocked)') : ''}${s.kind === 'tour' ? ' (tour dates disc)' : ''}${selected ? ' (selected)' : ''}`}
                 onFocus={() => i !== front && rotateTo(i)}
                 onClick={(e) => {
                   if (drag.current.moved) { e.preventDefault(); return; }
@@ -148,6 +148,8 @@ export function CDWheel({ songs, selectedId, onSelect, reducedMotion }: Props) {
                   <span className="disc-art" style={{ backgroundImage: `url(${s.artwork})` }} />
                   <span className="disc-sheen" />
                   <span className="disc-hub" />
+                  {s.locked && <span className="disc-lock">LOCKED</span>}
+                  {s.kind === 'tour' && <span className="disc-tour-label">TOUR</span>}
                 </span>
                 <span className="disc-shadow" aria-hidden="true" />
               </button>
