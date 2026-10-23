@@ -16,6 +16,26 @@ npx playwright install chromium   # once
 npm run build && npm run e2e      # headless checks + screenshots/ (takes ~45s; waits for a real 30s cap)
 ```
 
+## Current customisation: Wilson Shuker
+
+This copy is set up for **Wilson Shuker**. Profiles and links were checked on 23 Oct 2026:
+
+- Apple Music artist: https://music.apple.com/us/artist/wilson-shuker/1896717690 (singles "Feel-A" and "Nsimbi Yamahumusha", 2026)
+- YouTube: https://www.youtube.com/@wilsonshuker
+- SoundCloud: https://soundcloud.com/wilsonshuker
+- Instagram: https://www.instagram.com/wilsonshuker/ (the profile name matches; the bio could not be read)
+- X: https://x.com/wilsonshuker (display @WilsonShuker_SA)
+- **Not verified, left empty:** Spotify, YouTube Music (track/topic pages), TikTok.
+
+**Wilson must still supply:**
+- Authorised **30-second preview clips** for each song. The current files in `public/audio/` are synthesised test tones, labelled in the UI as "Placeholder tone, not the real song".
+- His Spotify / YouTube Music / TikTok URLs.
+- A reviewed bio. The current text is a draft based only on his public profiles.
+- A confirmed contact email. The one used is shown publicly on his YouTube channel.
+- The live domain for `artist.seo.url`.
+
+Photos were supplied by the user (originals are in `photo-src/`). Edits: crops for the desktop hero, mobile hero, profile and gallery; a light warm grade; slight contrast and saturation; fine grain; a soft vignette. Exports are WebP and JPG. His face and identity were not altered and no AI generation was used. Cover art comes from Apple Music (the two singles) and his YouTube video thumbnails (the rest).
+
 ## What the artist must supply
 
 Every asset that ships in this repo is a **placeholder**. The audio files are synthesised sine tones and the images are generated SVGs. Replace them with:

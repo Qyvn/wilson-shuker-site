@@ -1,57 +1,63 @@
 import type { ArtistConfig } from '../types';
 
 /**
- * CENTRAL ARTIST CONFIGURATION
- * Everything artist-specific lives here (plus src/data/songs.ts).
- * All values below are PLACEHOLDERS — replace with the artist's real, authorised content.
+ * CENTRAL ARTIST CONFIGURATION — Wilson Shuker
+ * Links below were checked on 23 Oct 2026 and resolve to profiles named "Wilson Shuker".
+ * The biography is a DRAFT written only from public profile text. Wilson should review/replace it.
  */
 export const artist: ArtistConfig = {
-  name: 'Nova Placeholder',
-  tagline: 'Placeholder artist — replace in src/config/artist.ts',
+  name: 'Wilson Shuker',
+  tagline: 'Hip-hop · rap · storytelling',
   logo: '/images/logo.svg',
-  heroImage: '/images/hero.svg',
-  profileImage: '/images/profile.svg',
-  shortIntro:
-    'Warm analogue textures, late-night melodies and songs built for headphones. (Placeholder intro text.)',
+  heroImage: '/images/wilson/hero-desktop.webp',
+  heroImageMobile: '/images/wilson/hero-mobile.webp',
+  heroFocus: '40% 40%',
+  profileImage: '/images/wilson/profile.webp',
+  shortIntro: 'Expressive and creative: telling a story through music and visuals.',
   biography: [
-    'This is placeholder biography copy. Replace it with the artist’s own story: where they come from, how they make music and what they stand for.',
-    'Keep it to two or three short paragraphs. Press quotes, milestones and collaborators work well here.',
+    // DRAFT — based only on Wilson’s public YouTube “About” text and his Apple Music listing (Hip-Hop/Rap). Please replace with his own words.
+    'Wilson Shuker is an independent hip-hop and rap artist who describes himself as an “International Nkinga” and an expressive, creative storyteller, through music and through visuals.',
+    'His 2026 singles “Nsimbi Yamahumusha” and “Feel-A” are out on Apple Music. His YouTube channel carries freestyles and performance videos such as “Hold Tight”, “The Most High” and “Soulless”.',
   ],
+  // Palette taken by eye from the supplied photos: warm wall/sunlight ambers and the blue of his shirt.
   colors: {
-    background: '#0f0d0c',
-    surface: '#1b1714',
-    text: '#f4ede4',
-    muted: '#b3a698',
-    accent: '#e8c48a',
-    accent2: '#c2410c',
+    background: '#12100e',
+    surface: '#1f1a16',
+    text: '#f3ebe1',
+    muted: '#b9a897',
+    accent: '#e3a25c',
+    accent2: '#2f6fd6',
   },
   fonts: {
     display: '"Fraunces", Georgia, serif',
     body: '"Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
-    // Optional: a stylesheet URL for web fonts. Leave empty to use system fonts only.
     googleFontsHref: '',
   },
-  // Only links with a non-empty URL are rendered.
+  // Only links with a non-empty URL are rendered. TikTok could not be verified, so it is left empty.
   socials: [
-    { label: 'Instagram', url: '' },
-    { label: 'TikTok', url: '' },
-    { label: 'YouTube', url: 'https://www.youtube.com/@example' /* EXAMPLE ONLY — replace */ },
+    { label: 'Apple Music', url: 'https://music.apple.com/us/artist/wilson-shuker/1896717690' },
+    { label: 'YouTube', url: 'https://www.youtube.com/@wilsonshuker' },
+    { label: 'SoundCloud', url: 'https://soundcloud.com/wilsonshuker' },
+    { label: 'Instagram', url: 'https://www.instagram.com/wilsonshuker/' },
+    { label: 'X', url: 'https://x.com/wilsonshuker' },
+    { label: 'Spotify', url: '' }, // not verified yet: add his Spotify artist URL
+    { label: 'TikTok', url: '' }, // not verified yet
   ],
   gallery: [
-    { src: '/images/gallery-1.svg', alt: 'Placeholder gallery image 1' },
-    { src: '/images/gallery-2.svg', alt: 'Placeholder gallery image 2' },
-    { src: '/images/gallery-3.svg', alt: 'Placeholder gallery image 3' },
+    { src: '/images/wilson/gallery-portrait.webp', alt: 'Wilson Shuker in clear-rim glasses and a silver chain, warm sunlight across his face' },
+    { src: '/images/wilson/gallery-wilson-crop.webp', alt: 'Wilson Shuker in a blue and white shirt and green cap, seated outdoors' },
+    { src: '/images/wilson/gallery-group.webp', alt: 'Wilson Shuker with friends at an outdoor gathering' },
   ],
   contact: {
-    email: 'hello@example.com',
-    management: 'Placeholder Management Ltd.',
-    bookingEmail: 'booking@example.com',
+    // Email shown publicly on his YouTube channel. Confirm before launch.
+    email: 'wilsonshuker@gmail.com',
   },
   seo: {
-    title: 'Nova Placeholder — Official Website',
-    description: 'Official website of Nova Placeholder. Listen to previews, explore the music and connect.',
-    url: 'https://example.com',
-    image: '/images/hero.svg',
+    title: 'Wilson Shuker — Official Website',
+    description:
+      'Official website of Wilson Shuker, hip-hop and rap artist. Spin the CD wheel, hear previews and stream “Feel-A” and “Nsimbi Yamahumusha”.',
+    url: 'https://example.com', // TODO: replace with the live domain
+    image: '/images/wilson/hero-desktop.jpg',
   },
   previewSeconds: 30,
 };

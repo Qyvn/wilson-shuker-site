@@ -23,7 +23,8 @@ try {
     await page.waitForSelector('.disc-slot');
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     check(`${vp.name}: no horizontal overflow`, overflow <= 0, `(scrollWidth - innerWidth = ${overflow})`);
-    if (vp.name === 'desktop') await page.screenshot({ path: 'screenshots/desktop-hero.png' });
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: `screenshots/${vp.name}-hero.png` });
 
     await page.locator('#music').scrollIntoViewIfNeeded();
     const stage = page.locator('.wheel-stage');
@@ -62,7 +63,7 @@ try {
   const page = await ctx.newPage();
   await page.goto(URL);
   await page.locator('#music').scrollIntoViewIfNeeded();
-  await page.getByRole('button', { name: /^Placeholder One/ }).click();
+  await page.getByRole('button', { name: /^Feel-A/ }).click();
   await page.waitForTimeout(900);
   await page.getByRole('button', { name: 'Play preview', exact: true }).click();
   await page.waitForTimeout(2500);
@@ -82,7 +83,7 @@ try {
   await page.waitForTimeout(500);
   check('real audio: switching stops playback', (await page.getByTestId('status').textContent()) === 'Paused');
   // unavailable song
-  for (let i = 0; i < 2; i++) await page.getByRole('button', { name: 'Rotate to next CD' }).click();
+  for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Rotate to next CD' }).click();
   await page.getByRole('button', { name: /^Load/ }).click();
   await page.waitForTimeout(500);
   check('unavailable song shows message', await page.getByText(/No preview is available/).isVisible());

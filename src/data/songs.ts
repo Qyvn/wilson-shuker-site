@@ -1,75 +1,81 @@
 import type { Song } from '../types';
 
 /**
- * SONG DATA — separate from components so it can later come from a CMS / database.
- * All entries are PLACEHOLDERS. Audio files are synthesised test tones, artwork is generated SVG.
- * Empty URL strings mean "not available": the matching button / preview is hidden or marked unavailable.
+ * SONG DATA — Wilson Shuker
+ * Titles, artwork and streaming URLs are real and were verified on 23 Oct 2026.
+ * Artwork: Apple Music covers for the two singles; YouTube video thumbnails for the rest.
+ *
+ * ⚠ PREVIEW AUDIO IS PLACEHOLDER: the files in /public/audio are synthesised test tones, NOT Wilson’s music.
+ * Swap in authorised 30s preview clips that Wilson supplies, or set previewUrl to "" to show "Preview unavailable".
+ * Spotify / YouTube Music track URLs could not be verified, so they are left empty and hidden.
  */
+const PLACEHOLDER = 'Placeholder tone, not the real song';
+
 export const songs: Song[] = [
   {
-    id: 'song-001',
-    title: 'Placeholder One',
-    subtitle: 'Test tone · 45s file (tests 30s cap)',
-    artwork: '/images/cover-1.svg',
+    id: 'feel-a',
+    title: 'Feel-A',
+    subtitle: `Single · 2026 · ${PLACEHOLDER}`,
+    artwork: '/images/covers/feel-a.jpg',
     previewUrl: '/audio/placeholder-tone-1.mp3',
-    spotifyUrl: 'https://open.spotify.com/track/EXAMPLE-replace-me', // EXAMPLE ONLY — not a real track
-    appleMusicUrl: '',
+    spotifyUrl: '',
+    appleMusicUrl: 'https://music.apple.com/us/album/feel-a/6775227235?i=6775227238',
+    youtubeMusicUrl: '',
+    youtubeUrl: 'https://www.youtube.com/watch?v=B_MC6xUQREU',
+  },
+  {
+    id: 'nsimbi-yamahumusha',
+    title: 'Nsimbi Yamahumusha',
+    subtitle: `Single · 2026 · ${PLACEHOLDER}`,
+    artwork: '/images/covers/nsimbi-yamahumusha.jpg',
+    previewUrl: '/audio/placeholder-tone-3.mp3',
+    spotifyUrl: '',
+    appleMusicUrl: 'https://music.apple.com/us/album/nsimbi-yamahumusha/6770127252?i=6770127253',
     youtubeMusicUrl: '',
     youtubeUrl: '',
   },
   {
-    id: 'song-002',
-    title: 'Placeholder Two',
-    subtitle: 'Test tone · 12s file',
-    artwork: '/images/cover-2.svg',
+    id: 'hold-tight',
+    title: 'Hold Tight',
+    subtitle: `YouTube · ${PLACEHOLDER}`,
+    artwork: '/images/covers/hold-tight.jpg',
     previewUrl: '/audio/placeholder-tone-2.mp3',
     spotifyUrl: '',
     appleMusicUrl: '',
     youtubeMusicUrl: '',
-    youtubeUrl: '',
+    youtubeUrl: 'https://www.youtube.com/watch?v=Y2zcUAX5l2I',
   },
   {
-    id: 'song-003',
-    title: 'Placeholder Three',
-    subtitle: 'Test tone · 40s file',
-    artwork: '/images/cover-3.svg',
-    previewUrl: '/audio/placeholder-tone-3.mp3',
-    spotifyUrl: '',
-    appleMusicUrl: '',
-    youtubeMusicUrl: '',
-    youtubeUrl: '',
-  },
-  {
-    id: 'song-004',
-    title: 'No Preview Yet',
-    subtitle: 'No preview supplied (tests unavailable state)',
-    artwork: '/images/cover-4.svg',
-    previewUrl: '',
-    spotifyUrl: '',
-    appleMusicUrl: '',
-    youtubeMusicUrl: '',
-    youtubeUrl: 'https://www.youtube.com/watch?v=EXAMPLE', // EXAMPLE ONLY — replace
-  },
-  {
-    id: 'song-005',
-    title: 'Placeholder Five',
-    subtitle: 'Test tone · 20s file',
-    artwork: '/images/cover-5.svg',
+    id: 'the-most-high',
+    title: 'The Most High (Freestyle)',
+    subtitle: `Cut the Check · ${PLACEHOLDER}`,
+    artwork: '/images/covers/the-most-high.jpg',
     previewUrl: '/audio/placeholder-tone-4.mp3',
     spotifyUrl: '',
     appleMusicUrl: '',
     youtubeMusicUrl: '',
-    youtubeUrl: '',
+    youtubeUrl: 'https://www.youtube.com/watch?v=16KECARAFns',
   },
   {
-    id: 'song-006',
-    title: 'Placeholder Six',
-    subtitle: 'Reuses tone 1',
-    artwork: '/images/cover-6.svg',
-    previewUrl: '/audio/placeholder-tone-1.mp3',
+    id: 'emotional-song',
+    title: 'Emotional Song',
+    subtitle: 'YouTube · no preview supplied yet',
+    artwork: '/images/covers/emotional-song.jpg',
+    previewUrl: '',
     spotifyUrl: '',
     appleMusicUrl: '',
     youtubeMusicUrl: '',
-    youtubeUrl: '',
+    youtubeUrl: 'https://www.youtube.com/watch?v=Hzwsoiw7BrY',
+  },
+  {
+    id: 'soulless',
+    title: 'Soulless',
+    subtitle: 'Emotional freestyle · no preview supplied yet',
+    artwork: '/images/covers/soulless.jpg',
+    previewUrl: '',
+    spotifyUrl: '',
+    appleMusicUrl: '',
+    youtubeMusicUrl: '',
+    youtubeUrl: 'https://www.youtube.com/watch?v=puYD1D-q9sg',
   },
 ];

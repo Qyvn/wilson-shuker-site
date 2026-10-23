@@ -40,7 +40,11 @@ export default function App() {
       </header>
 
       <main id="main">
-        <section id="top" className="hero" style={{ backgroundImage: `url(${artist.heroImage})` }}>
+        <section id="top" className="hero">
+          <picture className="hero-media">
+            {artist.heroImageMobile && <source media="(max-width: 700px)" srcSet={artist.heroImageMobile} />}
+            <img src={artist.heroImage} alt={`${artist.name}`} fetchPriority="high" style={{ objectPosition: artist.heroFocus }} />
+          </picture>
           <div className="hero-inner">
             <p className="eyebrow">{artist.tagline}</p>
             <h1>{artist.name}</h1>
@@ -93,7 +97,7 @@ export default function App() {
         </section>
       </main>
       <footer className="site-footer">
-        <p className="muted small">© {new Date().getFullYear()} {artist.name}. Previews used with permission.</p>
+        <p className="muted small">© {new Date().getFullYear()} {artist.name}. Preview clips are placeholders until authorised previews are supplied.</p>
       </footer>
     </>
   );
