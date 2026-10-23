@@ -1,3 +1,4 @@
+import { asset } from '../lib/asset';
 import type { ArtistConfig } from '../types';
 
 /**
@@ -8,11 +9,11 @@ import type { ArtistConfig } from '../types';
 export const artist: ArtistConfig = {
   name: 'Wilson Shuker',
   tagline: 'Hip-hop · rap · storytelling',
-  logo: '/images/logo.svg',
-  heroImage: '/images/wilson/hero-desktop.webp',
-  heroImageMobile: '/images/wilson/hero-mobile.webp',
+  logo: asset('/images/logo.svg'),
+  heroImage: asset('/images/wilson/hero-desktop.webp'),
+  heroImageMobile: asset('/images/wilson/hero-mobile.webp'),
   heroFocus: '40% 40%',
-  profileImage: '/images/wilson/profile.webp',
+  profileImage: asset('/images/wilson/profile.webp'),
   shortIntro: 'Expressive and creative: telling a story through music and visuals.',
   biography: [
     // DRAFT — based only on Wilson’s public YouTube “About” text and his Apple Music listing (Hip-Hop/Rap). Please replace with his own words.
@@ -44,9 +45,9 @@ export const artist: ArtistConfig = {
     { label: 'TikTok', url: '' }, // not verified yet
   ],
   gallery: [
-    { src: '/images/wilson/gallery-portrait.webp', alt: 'Wilson Shuker in clear-rim glasses and a silver chain, warm sunlight across his face' },
-    { src: '/images/wilson/gallery-wilson-crop.webp', alt: 'Wilson Shuker in a blue and white shirt and green cap, seated outdoors' },
-    { src: '/images/wilson/gallery-group.webp', alt: 'Wilson Shuker with friends at an outdoor gathering' },
+    { src: asset('/images/wilson/gallery-portrait.webp'), alt: 'Wilson Shuker in clear-rim glasses and a silver chain, warm sunlight across his face' },
+    { src: asset('/images/wilson/gallery-wilson-crop.webp'), alt: 'Wilson Shuker in a blue and white shirt and green cap, seated outdoors' },
+    { src: asset('/images/wilson/gallery-group.webp'), alt: 'Wilson Shuker with friends at an outdoor gathering' },
   ],
   contact: {
     // Email shown publicly on his YouTube channel. Confirm before launch.
@@ -57,7 +58,7 @@ export const artist: ArtistConfig = {
     description:
       'Official website of Wilson Shuker, hip-hop and rap artist. Spin the CD wheel, hear previews and stream “Feel-A” and “Nsimbi Yamahumusha”.',
     url: 'https://example.com', // TODO: replace with the live domain
-    image: '/images/wilson/hero-desktop.jpg',
+    image: asset('/images/wilson/hero-desktop.jpg'),
   },
   previewSeconds: 30,
 };

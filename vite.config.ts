@@ -10,7 +10,7 @@ const seo = () => ({
   name: 'artist-seo',
   transformIndexHtml(html: string) {
     const { title, description, url, image } = artist.seo;
-    const abs = image.startsWith('http') ? image : url.replace(/\/$/, '') + image;
+    const abs = image.startsWith('http') ? image : url.replace(/\/$/, '') + '/' + image.replace(/^.*?\/images\//, 'images/');
     const ld = JSON.stringify({ '@context': 'https://schema.org', '@type': 'MusicGroup', name: artist.name, url, image: abs,
       sameAs: artist.socials.map((s) => s.url).filter(Boolean) });
     const tags = `
@@ -30,6 +30,9 @@ const seo = () => ({
 });
 
 export default defineConfig({
+  // GitHub Pages serves from /<repo>/. The deploy workflow sets PAGES_BASE; local dev uses '/'.
+  base: process.env.PAGES_BASE ?? '/',
   plugins: [react(), seo()],
+  preview: { allowedHosts: true },
   test: { environment: 'jsdom', globals: true, setupFiles: './src/test/setup.ts', include: ['src/**/*.test.{ts,tsx}'] },
 });
