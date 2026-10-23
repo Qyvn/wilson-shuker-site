@@ -57,7 +57,7 @@ export const artist: ArtistConfig = {
     title: 'Wilson Shuker — Official Website',
     description:
       'Official website of Wilson Shuker, hip-hop and rap artist. Spin the CD wheel, hear previews and stream “Feel-A” and “Nsimbi Yamahumusha”.',
-    url: 'https://example.com', // TODO: replace with the live domain
+    url: 'https://qyvn.github.io/wilson-shuker-site/',
     image: asset('/images/wilson/hero-desktop.jpg'),
   },
   previewSeconds: 30,

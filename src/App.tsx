@@ -1,17 +1,28 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { artist, PREVIEW_CAP_SECONDS } from './config/artist';
 import { songs } from './data/songs';
 import { MusicSection } from './components/MusicSection';
 import { isUsableUrl } from './lib/links';
+import { mixtape, payments, tourEvents, vault } from './config/features';
+import { decodeMixtape } from './lib/mixtape';
+import { MixtapeMaker } from './components/MixtapeMaker';
+import { SharedMixtape } from './components/SharedMixtape';
+import { TourSection } from './components/TourSection';
+
+const readMix = () =>
+  decodeMixtape(window.location.search, songs, { maxSongs: mixtape.maxSongs, colorIds: mixtape.tapeColors.map((c) => c.id) });
 
 const NAV = [
   { href: '#music', label: 'Music' },
+  ...(mixtape.enabled ? [{ href: '#mixtape', label: 'Mixtape' }] : []),
+  ...(tourEvents.length ? [{ href: '#tour', label: 'Tour' }] : []),
   { href: '#about', label: 'About' },
   { href: '#gallery', label: 'Gallery' },
   { href: '#contact', label: 'Contact' },
 ];
 
 export default function App() {
+  const [sharedMix, setSharedMix] = useState(() => (mixtape.enabled ? readMix() : null));
   // Apply theme from config.
   useEffect(() => {
     const r = document.documentElement.style;
@@ -40,6 +51,10 @@ export default function App() {
       </header>
 
       <main id="main">
+        {sharedMix && (
+          <SharedMixtape mix={sharedMix} songs={songs} config={mixtape} capSeconds={PREVIEW_CAP_SECONDS}
+            onClose={() => { window.history.replaceState(null, '', window.location.pathname + '#mixtape'); setSharedMix(null); setTimeout(() => document.getElementById('mixtape')?.scrollIntoView(), 0); }} />
+        )}
         <section id="top" className="hero">
           <picture className="hero-media">
             {artist.heroImageMobile && <source media="(max-width: 700px)" srcSet={artist.heroImageMobile} />}
@@ -67,8 +82,28 @@ export default function App() {
             <h2>Music</h2>
             <p className="muted">Spin the collection, pick a CD and hear a {PREVIEW_CAP_SECONDS}-second preview.</p>
           </div>
-          <MusicSection songs={songs} capSeconds={PREVIEW_CAP_SECONDS} />
+          <MusicSection songs={songs} capSeconds={PREVIEW_CAP_SECONDS} vault={vault} tourEvents={tourEvents} />
         </section>
+
+        {mixtape.enabled && (
+          <section id="mixtape" className="section">
+            <div className="section-head">
+              <h2>Make a mixtape</h2>
+              <p className="muted">Pick up to {mixtape.maxSongs} songs, name your tape, choose a colour and share the link.</p>
+            </div>
+            <MixtapeMaker songs={songs} config={mixtape} />
+          </section>
+        )}
+
+        {tourEvents.length > 0 && (
+          <section id="tour" className="section">
+            <div className="section-head">
+              <h2>Tour</h2>
+              <p className="muted">Live dates and tickets{payments.paystackPublicKey ? ' (secure checkout by Paystack, prices in ZAR)' : ''}.</p>
+            </div>
+            <TourSection events={tourEvents} payments={payments} />
+          </section>
+        )}
 
         <section id="about" className="section about">
           <img src={artist.profileImage} alt={`Portrait of ${artist.name}`} width={400} height={500} loading="lazy" />
