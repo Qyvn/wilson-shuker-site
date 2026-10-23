@@ -90,3 +90,36 @@ src/test/                 Vitest tests
 scripts/e2e.mjs           Playwright checks (overflow, drag, real audio cap, reduced motion)
 public/audio, public/images   PLACEHOLDER assets
 ```
+
+## Features: mixtape maker, unreleased vault, tour and tickets
+
+All three are configured in `src/config/features.ts`.
+
+### Mixtape maker (`mixtape`)
+- Fans add up to `maxSongs` songs, by tapping "Add" or dragging onto the blank tape. They can reorder (↑/↓), remove, name the tape and pick a tape colour from `tapeColors`.
+- The share link stores everything in the query string (`?mixtape=1&t=<name>&c=<colour>&s=<id,id,…>`), so no backend is needed. Unknown or duplicate song ids are dropped, names are capped at 40 characters, and unknown colours fall back to the first one.
+- Opening a link shows a "Someone made you a mixtape" view. Previews play in order only after the visitor presses Play. The same 30-second cap applies, songs without a real preview are skipped, and each track shows its streaming links.
+- There are "Copy link" and native Web Share buttons. Share only appears where the browser supports it.
+
+### Unreleased vault (`vault`)
+- Adds a locked disc to the 3D wheel that shows a live countdown to `releaseDate` (ISO with offset). It unlocks automatically once that date passes and then links to `unlockUrl`, if set.
+- The current entry is an **EXAMPLE placeholder**: "Untitled — coming soon", 22 Nov 2026, labelled as an example in the UI. Replace it or set `enabled: false`.
+- An email signup appears only if `signupEndpoint` is a real form endpoint (e.g. Formspree). Otherwise it is hidden.
+
+### Tour and tickets (`tourEvents`, `payments`)
+- Each event has a name, venue, city, ISO date, price tiers in ZAR, a capacity note, and an optional `ticketUrl` (Quicket / Howler / Computicket). Past events are hidden automatically.
+- Each event's buy button follows these rules:
+  1. A valid `payments.paystackPublicKey` (`pk_live_…` / `pk_test_…`) turns on on-site checkout with **Paystack Inline v2** (ZAR). The fan picks a tier and quantity and enters their email. The Paystack script (`https://js.paystack.co/v2/inline.js`) loads only when they press Pay.
+  2. Otherwise, a `ticketUrl` shows a "Get tickets" link to that ticketing site.
+  3. Otherwise, a disabled **"Tickets coming soon"** button is shown. The current example event is in this state.
+- Success is shown only when Paystack's own `onSuccess` callback fires. The confirmation shows the Paystack reference and says the ticket will be emailed once the payment is verified.
+- **Important:** a static site cannot confirm payments server-side. Real ticket issuing and verification needs one of these:
+  - a Paystack webhook (`charge.success`) handled by a small server or serverless function that verifies the transaction with your **secret** key and emails the ticket, or
+  - a ticketing service.
+- Never put the Paystack secret key in this repo; only the public key belongs in config.
+
+### What Wilson must supply for these features
+- **Paystack:** a verified Paystack business account (South Africa), its **public key**, and a webhook/fulfilment setup (or a ticketing partner). Alternatively, just a Quicket/Howler/Computicket event URL per show.
+- **Events:** real name, venue, city, date and time, tiers with ZAR prices, capacity notes, max tickets per order. Remove the EXAMPLE event.
+- **Vault:** the real title, teaser artwork, release date and time, and an optional pre-save or streaming link. Optionally a signup form endpoint.
+- **Mixtape:** nothing required. Optionally change the tape colours or the max song count.

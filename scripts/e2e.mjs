@@ -44,7 +44,9 @@ try {
     await page.waitForTimeout(800);
     const after = await rot(page);
     check(`${vp.name}: drag rotates wheel`, Math.abs(after - before) >= 30, `(rotation ${before} -> ${after})`);
-    check(`${vp.name}: wheel snaps to a CD after drag`, Math.abs(after % 60) < 0.5 || Math.abs(Math.abs(after % 60) - 60) < 0.5);
+    const step = 360 / (await page.locator('.disc-slot').count());
+    const rem = Math.abs(after % step);
+    check(`${vp.name}: wheel snaps to a CD after drag`, rem < 0.5 || Math.abs(rem - step) < 0.5, `(step ${step})`);
 
     // select via click on front disc
     await page.locator('.disc-slot.is-front').click();
@@ -88,6 +90,60 @@ try {
   await page.waitForTimeout(500);
   check('unavailable song shows message', await page.getByText(/No preview is available/).isVisible());
   await ctx.close();
+
+
+  // ---- New features (mobile width) ----
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, permissions: ['clipboard-read', 'clipboard-write'] });
+    const page = await ctx.newPage();
+    const errs = []; page.on('pageerror', (e) => errs.push(String(e)));
+    await page.goto(URL);
+    // Vault disc
+    await page.getByRole('button', { name: /locked vault disc/ }).focus();
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(800);
+    check('vault: panel shows locked state with countdown', (await page.getByRole('timer').count()) === 1 && /Locked until/.test(await page.getByTestId('vault-state').textContent()));
+    check('vault: example label visible', await page.getByText(/EXAMPLE placeholder/).isVisible());
+    check('vault: no signup without endpoint', (await page.getByTestId('vault-signup').count()) === 0);
+    await page.getByTestId('vault-panel').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: 'screenshots/mobile-vault.png' });
+    // Mixtape
+    await page.locator('#mixtape').scrollIntoViewIfNeeded();
+    for (const t of ['Hold Tight', 'Feel-A', 'Emotional Song']) await page.getByRole('button', { name: `Add ${t} to mixtape` }).click();
+    await page.getByRole('button', { name: 'Move Feel-A up' }).click();
+    await page.getByLabel('Name your tape').fill('Sunday drive');
+    await page.locator('.swatch', { hasText: 'Shirt blue' }).click();
+    await page.getByRole('button', { name: 'Copy link' }).click();
+    await page.waitForTimeout(300);
+    const copiedOk = await page.getByText('Link copied!').count();
+    const link = await page.getByTestId('mixtape-link').getAttribute('href');
+    check('mixtape: link generated with order + name + colour', /mixtape=1/.test(link) && /s=feel-a%2Chold-tight%2Cemotional-song/.test(link) && /c=blue/.test(link) && /t=Sunday\+drive/.test(link), link);
+    check('mixtape: copy link reports result', copiedOk === 1 || (await page.getByText(/Couldn’t copy/).count()) === 1);
+    await page.locator('.mix-tape-area').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: 'screenshots/mobile-mixtape.png' });
+    const ov = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    check('mobile: no overflow with new sections', ov <= 0, `(${ov})`);
+    // Shared view
+    await page.goto(link);
+    await page.waitForSelector('[data-testid="shared-mixtape"]');
+    check('shared mixtape: shows title', (await page.locator('#shared-mix-title').textContent()) === 'Sunday drive');
+    await page.getByRole('button', { name: /Play mixtape/ }).click();
+    await page.waitForTimeout(2000);
+    const st = await page.getByTestId('mix-status').textContent();
+    check('shared mixtape: plays first track for real', /1\. Feel-A: playing/.test(st), st);
+    await page.screenshot({ path: 'screenshots/mobile-shared-mixtape.png' });
+    // Tour
+    await page.goto(URL + '#tour');
+    await page.locator('#tour').scrollIntoViewIfNeeded();
+    check('tour: example event shown', await page.getByText('EXAMPLE event: not a real show').isVisible());
+    check('tour: coming-soon button disabled, no pay button', (await page.getByTestId('tickets-soon').isDisabled()) && (await page.getByRole('button', { name: /Paystack/ }).count()) === 0);
+    const psLoaded = await page.evaluate(() => !!document.querySelector('script[src*="paystack"]'));
+    check('tour: Paystack script not loaded without key', !psLoaded);
+    await page.getByTestId('event-example-show').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: 'screenshots/mobile-tickets.png' });
+    check('features: no page errors', errs.length === 0, errs.join('; '));
+    await ctx.close();
+  }
 
   // reduced motion
   const rctx = await browser.newContext({ viewport: { width: 1024, height: 800 }, reducedMotion: 'reduce' });
