@@ -4,9 +4,9 @@ import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 
 const PORT = 4179;
-const URL = `http://localhost:${PORT}/`;
-const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
-await new Promise((r) => { server.stdout.on('data', (d) => String(d).includes('localhost') && r()); setTimeout(r, 8000); });
+const URL = process.env.BASE_URL ?? `http://localhost:${PORT}/`;
+const server = process.env.BASE_URL ? null : spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
+if (server) await new Promise((r) => { server.stdout.on('data', (d) => String(d).includes('localhost') && r()); setTimeout(r, 8000); });
 
 const results = [];
 const check = (name, ok, info = '') => { results.push({ name, ok, info }); console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${info}`); };
@@ -60,37 +60,57 @@ try {
     await ctx.close();
   }
 
-  // Real audio: select song-001 (45s file), play, verify it plays and stops at <= 30s.
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  const page = await ctx.newPage();
-  await page.goto(URL);
-  await page.locator('#music').scrollIntoViewIfNeeded();
-  await page.getByRole('button', { name: /^Feel-A/ }).click();
-  await page.waitForTimeout(900);
-  await page.getByRole('button', { name: 'Play preview', exact: true }).click();
-  await page.waitForTimeout(2500);
-  const st1 = await page.getByTestId('status').textContent();
-  check('real audio: status Playing after play', st1 === 'Playing', `(${st1})`);
-  await page.screenshot({ path: 'screenshots/desktop-music-playing.png' });
-  // wait in real time for the cap (file is 45s long)
-  await page.waitForFunction(() => document.querySelector('[data-testid="status"]').textContent === 'Preview ended', null, { timeout: 40000 });
-  const now = await page.locator('.progress').getAttribute('aria-valuenow');
-  check('real audio: 45s file stopped at 30s cap', now === '30', `(aria-valuenow=${now})`);
-  await page.getByRole('button', { name: /Replay/ }).click();
-  await page.waitForTimeout(1500);
-  check('real audio: replay plays again', (await page.getByTestId('status').textContent()) === 'Playing');
-  // switch -> previous stops
-  await page.getByRole('button', { name: 'Rotate to next CD' }).click();
-  await page.getByRole('button', { name: /^Load/ }).click();
-  await page.waitForTimeout(500);
-  check('real audio: switching stops playback', (await page.getByTestId('status').textContent()) === 'Paused');
-  // unavailable song
-  for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Rotate to next CD' }).click();
-  await page.getByRole('button', { name: /^Load/ }).click();
-  await page.waitForTimeout(500);
-  check('unavailable song shows message', await page.getByText(/No preview is available/).isVisible());
-  await ctx.close();
-
+  // Real Apple previews on desktop + mobile: play, check time advances from real media events, no media errors.
+  for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile', width: 390, height: 844, isMobile: true, hasTouch: true }]) {
+    const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.isMobile, hasTouch: vp.hasTouch });
+    const page = await ctx.newPage();
+    const mediaFails = [];
+    page.on('requestfailed', (r) => { if (/itunes|mzstatic/.test(r.url()) && !/ABORTED/.test(r.failure()?.errorText ?? '')) mediaFails.push(r.url() + ' ' + r.failure()?.errorText); });
+    page.on('response', (r) => { if (/itunes|mzstatic/.test(r.url()) && r.status() >= 400) mediaFails.push(`${r.status()} ${r.url()}`); });
+    await page.goto(URL);
+    const val = () => page.locator('.progress').getAttribute('aria-valuenow').then(Number);
+    for (const title of ['Feel-A', 'Nsimbi Yamahumusha']) {
+      await page.locator('#music').scrollIntoViewIfNeeded();
+      while (!(await page.locator('.wheel-caption').textContent()).includes(title)) await page.getByRole('button', { name: 'Rotate to next CD' }).click();
+      await page.getByRole('button', { name: /^Load/ }).click();
+      await page.waitForTimeout(900);
+      check(`${vp.name} ${title}: no autoplay`, (await page.getByTestId('status').textContent()) === 'Paused');
+      check(`${vp.name} ${title}: Apple credit link`, /music\.apple\.com/.test(await page.getByTestId('preview-credit').locator('a').getAttribute('href')));
+      await page.getByRole('button', { name: 'Play preview', exact: true }).click();
+      await page.waitForFunction(() => Number(document.querySelector('.progress').getAttribute('aria-valuenow')) >= 2, null, { timeout: 15000 }).catch(() => {});
+      const t1 = await val(); await page.waitForTimeout(2000); const t2 = await val();
+      const st = await page.getByTestId('status').textContent();
+      check(`${vp.name} ${title}: real audio plays, currentTime advances`, st === 'Playing' && t2 > t1 && t1 >= 1, `(${st}, ${t1}s -> ${t2}s)`);
+      check(`${vp.name} ${title}: no media error`, (await page.getByRole('alert').count()) === 0);
+      if (title === 'Feel-A') await page.screenshot({ path: `screenshots/${vp.name}-real-preview-playing.png` });
+      await page.getByRole('button', { name: 'Pause preview' }).click();
+    }
+    check(`${vp.name}: Apple media/artwork requests OK`, mediaFails.length === 0, mediaFails.join(', '));
+    // YouTube fallback (click-to-load)
+    while (!(await page.locator('.wheel-caption').textContent()).includes('Hold Tight')) await page.getByRole('button', { name: 'Rotate to next CD' }).click();
+    await page.getByRole('button', { name: /^Load/ }).click();
+    await page.waitForTimeout(500);
+    check(`${vp.name}: no-preview song says unavailable`, (await page.getByTestId('status').textContent()) === 'Preview unavailable');
+    await page.getByRole('button', { name: /Load official video/ }).click();
+    check(`${vp.name}: YouTube embed loads on request`, /youtube-nocookie\.com\/embed\/Y2zcUAX5l2I/.test(await page.locator('.embed-fallback iframe').getAttribute('src')));
+    await ctx.close();
+  }
+  // 30s cap with a real Apple preview (desktop)
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await ctx.newPage();
+    await page.goto(URL);
+    await page.getByRole('button', { name: /^Feel-A/ }).click();
+    await page.waitForTimeout(900);
+    await page.getByRole('button', { name: 'Play preview', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('[data-testid="status"]').textContent === 'Preview ended', null, { timeout: 45000 });
+    const now = Number(await page.locator('.progress').getAttribute('aria-valuenow'));
+    check('real audio: preview ends at or before the 30s cap', now <= 30 && now >= 25, `(${now})`);
+    await page.getByRole('button', { name: /Replay/ }).click();
+    await page.waitForTimeout(2000);
+    check('real audio: replay plays again', (await page.getByTestId('status').textContent()) === 'Playing');
+    await ctx.close();
+  }
 
   // ---- New features (mobile width) ----
   {
@@ -156,7 +176,7 @@ try {
   await rctx.close();
 } finally {
   await browser.close();
-  server.kill();
+  server?.kill();
 }
 const failed = results.filter((r) => !r.ok);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed`);

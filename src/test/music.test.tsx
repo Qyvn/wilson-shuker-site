@@ -12,6 +12,9 @@ const songs: Song[] = [
   { id: 'a', title: 'Alpha', artwork: '/a.svg', previewUrl: '/audio/a.mp3', ...base, spotifyUrl: 'https://open.spotify.com/track/x' },
   { id: 'b', title: 'Bravo', artwork: '/b.svg', previewUrl: '/audio/b.mp3', ...base },
   { id: 'c', title: 'Charlie', artwork: '/c.svg', previewUrl: '', ...base, youtubeUrl: 'https://www.youtube.com/watch?v=x' },
+  { id: 'd', title: 'Delta', artwork: '/d.svg', previewUrl: 'https://audio-ssl.itunes.apple.com/x.m4a', ...base,
+    previewCredit: { label: 'Preview & artwork courtesy of Apple Music', url: 'https://music.apple.com/us/album/x' } },
+  { id: 'e', title: 'Echo', artwork: '/e.svg', previewUrl: '', ...base, embed: { kind: 'youtube', id: 'VID123', title: 'Echo video' } },
 ];
 
 const audio = () => FakeAudio.instances[FakeAudio.instances.length - 1];
@@ -104,6 +107,31 @@ describe('preview player', () => {
     expect(screen.getByText('Facing:').parentElement).toHaveTextContent('Charlie');
     await userEvent.keyboard('{Enter}');
     expect(screen.getByRole('button', { name: /Charlie \(selected\)/ })).toHaveAttribute('aria-pressed', 'true');
+  });
+});
+
+describe('real previews and fallbacks', () => {
+  it('streams a third-party preview URL as-is and shows the credit link', async () => {
+    render(<MusicSection songs={songs} capSeconds={30} />);
+    await userEvent.click(disc(/^Delta/));
+    expect(audio().src).toBe('https://audio-ssl.itunes.apple.com/x.m4a');
+    expect(audio().playCalls).toBe(0);
+    expect(screen.getByRole('link', { name: /courtesy of Apple Music/ })).toHaveAttribute('href', 'https://music.apple.com/us/album/x');
+  });
+  it('no preview + verified embed: click-to-load YouTube embed, never autoplay', async () => {
+    render(<MusicSection songs={songs} capSeconds={30} />);
+    await userEvent.click(disc(/^Echo/));
+    expect(screen.getByTestId('status')).toHaveTextContent('Preview unavailable');
+    expect(document.querySelector('iframe')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: /Load official video/ }));
+    const f = document.querySelector('iframe')!;
+    expect(f.src).toBe('https://www.youtube-nocookie.com/embed/VID123?rel=0');
+    expect(f.src).not.toMatch(/autoplay=1/);
+  });
+  it('no preview and no embed: shows unavailable without an embed', async () => {
+    render(<MusicSection songs={songs} capSeconds={30} />);
+    await userEvent.click(disc(/^Charlie/));
+    expect(screen.queryByTestId('embed-fallback')).toBeNull();
   });
 });
 

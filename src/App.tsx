@@ -132,7 +132,7 @@ export default function App() {
         </section>
       </main>
       <footer className="site-footer">
-        <p className="muted small">© {new Date().getFullYear()} {artist.name}. Preview clips are placeholders until authorised previews are supplied.</p>
+        <p className="muted small">© {new Date().getFullYear()} {artist.name}. Previews &amp; artwork for Apple Music releases courtesy of Apple Music.</p>
       </footer>
     </>
   );

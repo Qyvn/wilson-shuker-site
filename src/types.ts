@@ -10,6 +10,10 @@ export interface Song {
   appleMusicUrl: string;
   youtubeMusicUrl: string;
   youtubeUrl: string;
+  /** Credit + link shown when previewUrl/artwork come from a third party (e.g. Apple Music). */
+  previewCredit?: { label: string; url: string };
+  /** Official embed fallback when there is no audio preview (verified video ID on the artist's own channel). */
+  embed?: { kind: 'youtube'; id: string; title: string };
   /** Internal: special wheel discs. Omit for normal songs. */
   kind?: 'song' | 'vault' | 'tour';
   locked?: boolean;

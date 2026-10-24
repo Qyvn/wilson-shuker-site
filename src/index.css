@@ -232,3 +232,6 @@ input[type="text"], input:not([type]), input[type="email"], input[type="number"]
 .buy-row .field { margin-top: 0; flex: 1 1 200px; }
 .total { margin: 0; width: 100%; }
 .notice.success { background: #2e8b5722; border-color: #2e8b5777; }
+.embed-fallback { margin-top: .8rem; }
+.embed-fallback iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 10px; display: block; }
+.preview-credit { margin: .6rem 0 0; } .preview-credit a { color: var(--muted); }

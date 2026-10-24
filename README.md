@@ -28,7 +28,7 @@ This copy is set up for **Wilson Shuker**. Profiles and links were checked on 23
 - **Not verified, left empty:** Spotify, YouTube Music (track/topic pages), TikTok.
 
 **Wilson must still supply:**
-- Authorised **30-second preview clips** for each song. The current files in `public/audio/` are synthesised test tones, labelled in the UI as "Placeholder tone, not the real song".
+- **Previews:** Feel-A and Nsimbi Yamahumusha stream Apple's official 30s previews directly from Apple's CDN (via the iTunes Lookup API, id 1896717690), credited "Preview & artwork courtesy of Apple Music". The YouTube-only songs show "Preview unavailable" with a click-to-load official YouTube embed from @WilsonShuker. Placeholder tones have been removed.
 - His Spotify / YouTube Music / TikTok URLs.
 - A reviewed bio. The current text is a draft based only on his public profiles.
 - A confirmed contact email. The one used is shown publicly on his YouTube channel.

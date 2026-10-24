@@ -1,7 +1,7 @@
 import type { Song } from '../types';
 import type { usePreviewPlayer } from '../hooks/usePreviewPlayer';
 import { StreamingLinks } from './StreamingLinks';
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 
 type Player = ReturnType<typeof usePreviewPlayer>;
 
@@ -22,6 +22,8 @@ export const CassettePlayer = forwardRef<HTMLDivElement, { song: Song | null; pl
     const { status, time, duration, cap, play, pause, replay } = player;
     const isPlaying = status === 'playing' || status === 'loading';
     const canPlay = !!song?.previewUrl && status !== 'error';
+    const [showEmbed, setShowEmbed] = useState(false);
+    useEffect(() => setShowEmbed(false), [song?.id]);
     const pct = Math.min(100, (time / Math.max(1, duration)) * 100);
 
     return (
@@ -86,8 +88,26 @@ export const CassettePlayer = forwardRef<HTMLDivElement, { song: Song | null; pl
 
         {status === 'unavailable' && (
           <p className="notice" role="note">
-            No preview is available for this song yet. Listen to the full track below where available.
+            No preview is available for this song yet.{song?.embed ? ' Watch the official video from his YouTube channel instead.' : ' Listen to the full track below where available.'}
           </p>
+        )}
+        {status === 'unavailable' && song?.embed && (
+          <div className="embed-fallback" data-testid="embed-fallback">
+            {showEmbed ? (
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${song.embed.id}?rel=0`}
+                title={`${song.embed.title} (official video, YouTube)`}
+                loading="lazy"
+                allow="encrypted-media; picture-in-picture; fullscreen"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            ) : (
+              <button type="button" className="btn btn-ghost" onClick={() => setShowEmbed(true)}>
+                Load official video (YouTube)
+              </button>
+            )}
+          </div>
         )}
         {status === 'error' && (
           <p className="notice" role="alert">
@@ -95,6 +115,11 @@ export const CassettePlayer = forwardRef<HTMLDivElement, { song: Song | null; pl
           </p>
         )}
 
+        {song?.previewCredit && (
+          <p className="preview-credit small muted" data-testid="preview-credit">
+            <a href={song.previewCredit.url} target="_blank" rel="noopener noreferrer">{song.previewCredit.label}<span className="sr-only"> (opens in a new tab)</span></a>
+          </p>
+        )}
         {song && (
           <div className="deck-links">
             <h3 className="small-caps">Full track</h3>
