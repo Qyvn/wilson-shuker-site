@@ -47,9 +47,9 @@ export function SharedMixtape({ mix, songs, config, capSeconds, onClose }: {
     setIndex(first);
     setSequencing(true);
   };
-  const playing = player.status === 'playing' || player.status === 'loading';
+  const playing = player.status === 'playing' || player.status === 'loading' || player.status === 'buffering';
   const anyPlayable = nextPlayable(0) !== -1;
-  const label: Record<string, string> = { playing: 'playing', loading: 'loading…', paused: 'paused', ended: 'finished', error: 'preview failed to load', unavailable: 'no preview', idle: '' };
+  const label: Record<string, string> = { playing: 'playing', loading: 'loading…', buffering: 'buffering…', paused: 'paused', ended: 'finished', error: 'preview failed to load', unavailable: 'no preview', idle: '' };
 
   return (
     <section className="section shared-mix" aria-labelledby="shared-mix-title" data-testid="shared-mixtape">

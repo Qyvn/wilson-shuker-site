@@ -5,11 +5,12 @@ import { forwardRef, useEffect, useState } from 'react';
 
 type Player = ReturnType<typeof usePreviewPlayer>;
 
-const fmt = (t: number) => `0:${String(Math.floor(t)).padStart(2, '0')}`;
+const fmt = (t: number) => `0:${String(Math.floor(t + 1e-6)).padStart(2, '0')}`;
 
 const STATUS_LABEL: Record<Player['status'], string> = {
   idle: 'No tape loaded',
   loading: 'Loading…',
+  buffering: 'Buffering…',
   playing: 'Playing',
   paused: 'Paused',
   ended: 'Preview ended',
@@ -20,14 +21,14 @@ const STATUS_LABEL: Record<Player['status'], string> = {
 export const CassettePlayer = forwardRef<HTMLDivElement, { song: Song | null; player: Player }>(
   function CassettePlayer({ song, player }, slotRef) {
     const { status, time, duration, cap, play, pause, replay } = player;
-    const isPlaying = status === 'playing' || status === 'loading';
+    const isPlaying = status === 'playing' || status === 'loading' || status === 'buffering';
     const canPlay = !!song?.previewUrl && status !== 'error';
     const [showEmbed, setShowEmbed] = useState(false);
     useEffect(() => setShowEmbed(false), [song?.id]);
     const pct = Math.min(100, (time / Math.max(1, duration)) * 100);
 
     return (
-      <div className={`cassette-deck status-${status}`} data-status={status}>
+      <div className={`cassette-deck status-${status}`} data-status={status} data-time={time.toFixed(3)}>
         <div className="deck-top">
           <span className="deck-brand">STEREO CASSETTE · {cap}s PREVIEW</span>
           <span className={`led ${status === 'playing' ? 'on' : ''}`} aria-hidden="true" />

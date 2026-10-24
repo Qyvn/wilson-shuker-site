@@ -95,6 +95,51 @@ try {
     check(`${vp.name}: YouTube embed loads on request`, /youtube-nocookie\.com\/embed\/Y2zcUAX5l2I/.test(await page.locator('.embed-fallback iframe').getAttribute('src')));
     await ctx.close();
   }
+  // Sync under throttled network: UI time must track audio.currentTime; Buffering shown when media waits.
+  for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile', width: 390, height: 844, isMobile: true, hasTouch: true }]) {
+    const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.isMobile, hasTouch: vp.hasTouch });
+    const page = await ctx.newPage();
+    const errs = []; page.on('pageerror', (e) => errs.push(String(e)));
+    await page.goto(URL);
+    const cdp = await ctx.newCDPSession(page);
+    await cdp.send('Network.enable');
+    await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 400, downloadThroughput: 400 * 1024 / 8, uploadThroughput: 200 * 1024 / 8 }); // ~400 kbps, 400ms RTT
+    for (const title of ['Feel-A', 'Nsimbi Yamahumusha', 'Feel-A']) { // quick switching too
+      while (!(await page.locator('.wheel-caption').textContent()).includes(title)) await page.getByRole('button', { name: 'Rotate to next CD' }).click();
+      await page.getByRole('button', { name: /^Load/ }).click();
+    }
+    await page.getByRole('button', { name: 'Play preview', exact: true }).click();
+    const r = await page.evaluate(() => new Promise((done) => {
+      const els = window.__previewAudio; const a = els[els.length - 1];
+      const deck = document.querySelector('.cassette-deck');
+      const st = () => document.querySelector('[data-testid="status"]').textContent;
+      let maxDiff = 0, samples = 0, badPlaying = 0, sawBuffering = false, playingSamples = 0, overlap = 0;
+      const t0 = performance.now();
+      const step = () => {
+        const s = st();
+        if (s === 'Buffering…' || s === 'Loading…') sawBuffering = true;
+        if (els.filter((e) => !e.paused).length > 1) overlap++;
+        if (s === 'Playing') {
+          playingSamples++;
+          const d = Math.abs(Number(deck.dataset.time) - a.currentTime);
+          maxDiff = Math.max(maxDiff, d); samples++;
+          if (a.paused || a.readyState < 3) badPlaying++;
+          const reels = deck.querySelectorAll('.reel.spin').length;
+          if (reels !== 2) badPlaying++;
+        } else if (deck.querySelectorAll('.reel.spin').length) badPlaying++;
+        if (performance.now() - t0 < 12000) requestAnimationFrame(step);
+        else done({ maxDiff, samples, badPlaying, sawBuffering, playingSamples, overlap, final: a.currentTime, err: a.error && a.error.code });
+      };
+      requestAnimationFrame(step);
+    }));
+    check(`${vp.name} throttled: audio actually played`, r.playingSamples > 30 && r.final > 2, JSON.stringify(r));
+    check(`${vp.name} throttled: UI time within 100ms of currentTime`, r.maxDiff <= 0.1, `(max ${Math.round(r.maxDiff * 1000)}ms over ${r.samples} frames)`);
+    check(`${vp.name} throttled: 'Playing' + spinning reels only while media really plays`, r.badPlaying === 0, `(${r.badPlaying} bad frames)`);
+    check(`${vp.name} throttled: loading/buffering state shown before sound`, r.sawBuffering);
+    check(`${vp.name} throttled: never two previews at once, no media error`, r.overlap === 0 && !r.err && (await page.getByRole('alert').count()) === 0);
+    check(`${vp.name} throttled: no page errors`, errs.length === 0, errs.join('; '));
+    await ctx.close();
+  }
   // 30s cap with a real Apple preview (desktop)
   {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
